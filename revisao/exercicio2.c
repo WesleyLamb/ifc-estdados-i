@@ -39,6 +39,13 @@ int main() {
     escreverMatriz(matriz, N, M);
     escreverGrayScale(grayScale, N, M);
 
+    for (int i = 0; i < N; i++) {
+        free(matriz[i]);
+        free(grayScale[i]);
+    }
+    free(matriz);
+    free(grayScale);
+
     return 0;
 }
 
