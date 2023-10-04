@@ -1,10 +1,11 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 
 typedef struct sNodo {
-    struct sNodo *prev;
+    char *info;
     struct sNodo *next;
-    char info[10]
+    struct sNodo *prev;
 } Nodo;
 
 typedef struct {
@@ -13,64 +14,20 @@ typedef struct {
     int size;
 } Lista;
 
-Lista *inicializarLista();
-void inicializarNodo(Nodo*);
-int adicionarNodo(Lista*, Nodo*, char[10]);
-void tratarException(int);
+Lista* inicializarLista();
+Nodo* inicializarNodo();
+void adicionarNodo(Lista*, Nodo*, Nodo*);
 int removerNodo(Lista*, Nodo*);
 void imprimirLista(Lista*);
+void tratarException(int);
+void liberarNodo(Nodo*);
+void liberarLista(Lista*);
+Nodo* procurarNodo(Lista*, char*);
+Nodo* criarNodo(char*);
 
-int main() {
-    Lista *lista;
-    lista = inicializarLista();
+Lista* inicializarLista() {
+    Lista* lista = (Lista*) malloc(sizeof(Lista));
 
-    printf("\nPasso 1: \n");
-    int retorno = removerNodo(lista, lista->head);
-    tratarException(retorno);
-    imprimirLista(lista);
-
-    printf("\nPasso 2:\n");
-    adicionarNodo(lista, lista->tail, "Joao");
-    imprimirLista(lista);
-
-    printf("\nPasso 3:\n");
-    Nodo *nodoMaria = adicionarNodo(lista, lista->head, "Maria");
-    imprimirLista(lista);
-
-    // procurarNodo(&lista, "Maria");
-    printf("\nPasso 4:\n");
-    Nodo *nodoLucas =  adicionarNodo(lista, nodoMaria, "Lucas");
-    imprimirLista(lista);
-
-    printf("\nPasso 5:\n");
-    removerNodo(lista, nodoLucas);
-    imprimirLista(lista);
-
-    printf("\nPasso 6:\n");
-    adicionarNodo(lista, NULL, "Sandro");
-    imprimirLista(lista);
-
-    printf("\nPasso 7:\n");
-    adicionarNodo(lista, NULL, "Pedro");
-    imprimirLista(lista);
-
-    printf("\nPasso 8:\n");
-    removerNodo(lista, lista->tail);
-    imprimirLista(lista);
-
-    printf("\nPasso 9:\n");
-    removerNodo(lista, lista->head);
-    imprimirLista(lista);
-
-    printf("\nPasso 10:\n");
-    removerNodo(lista, NULL);
-    imprimirLista(lista);
-
-    return 0;
-}
-
-Lista *inicializarLista() {
-    Lista *lista = malloc(sizeof(Lista));
     lista->head = NULL;
     lista->tail = NULL;
     lista->size = 0;
@@ -78,83 +35,117 @@ Lista *inicializarLista() {
     return lista;
 }
 
-void inicializarNodo(Nodo *nodo) {
+Nodo* inicializarNodo() {
+    Nodo* nodo = (Nodo*) malloc(sizeof(Nodo));
     nodo->next = NULL;
     nodo->prev = NULL;
-
-    return nodo;
 }
 
-int adicionarNodo(Lista *lista, Nodo *pivo, char info[10]) {
-    Nodo *novoEl = 0;
-    novoEl = malloc(sizeof(Nodo));
-    inicializarNodo(novoEl);
-    printf("%x", *novoEl);
-    if ((pivo == NULL) && (lista->size > 0)) {
-        return 1;
-    }
-    if (lista->size == 0) {
-        lista->head = novoEl;
-        lista->tail = novoEl;
-    } else {
-        novoEl->next = pivo->next;
-        novoEl->prev = pivo;
-
-        if (pivo->next == NULL)
-            lista->tail = novoEl;
-        else
-            pivo->next->prev = novoEl;
-
-        pivo->next = novoEl;
-    }
-    lista->size++;
-
-    return 0;
-}
-
-void tratarException(int errorCode) {
-    switch (errorCode)
-    {
-    case 1:
-        printf("Pivo so pode ser nulo caso a lista esteja vazia");
-        break;
-    case 2:
-        printf("A lista esta vazia");
-        break;
-    default:
-        break;
-    }
-}
-
-int removerNodo(Lista *lista, Nodo *nodo) {
-    if ((nodo != NULL) && (lista->size > 0)) {
-        if (nodo == lista->head) {
-            lista->head = nodo->next;
-            if (lista->head == NULL)
-                lista->tail = NULL;
-            else
-                nodo->next->prev = NULL;
+void adicionarNodo(Lista* lista, Nodo* pivo, Nodo* nodo) {
+    if (pivo == NULL) {
+        if (lista->head != NULL) {
+            nodo->next = lista->head;
+            lista->head->prev = nodo;
+            lista->head = nodo;
         } else {
-            nodo->prev->next = nodo->next;
-            if (nodo->next == NULL)
-                lista->tail = nodo->prev;
-            else
-                nodo->next->prev = nodo->prev;
+            lista->head = nodo;
+            lista->tail = nodo;
+        }
+    } else {
+        nodo->next = pivo->next;
+        nodo->prev = pivo;
+        if (nodo->next != NULL) {
+            nodo->next->prev = nodo;
+        } else {
+            lista->tail = nodo;
         }
     }
-    free(nodo);
-    lista->size--;
-
+    lista->size++;
     return 0;
 }
 
 void imprimirLista(Lista* lista) {
-    Nodo *el;
+    Nodo* el;
     el = lista->head;
-    int i = 0;
     while (el != NULL) {
-        printf("[%d] => %s\n", i, el->info);
-        i++;
+        printf("|%s|", el->info);
         el = el->next;
     };
+    printf(": [%d]\n", lista->size);
+}
+
+int removerNodo(Lista* lista, Nodo* nodo) {
+    if (lista->size == 0) {
+        return 1;
+    }
+    if (nodo == lista->head) {
+        lista->head = nodo->next;
+    }
+    if (nodo == lista->tail) {
+        lista->tail = nodo->prev;
+    }
+    if (nodo->next != NULL) {
+        nodo->next->prev = nodo->prev;
+    }
+    if (nodo->prev != NULL) {
+
+    }
+
+    return 4;
+}
+
+void tratarException(int errorCode) {
+    switch (errorCode) {
+    case 1:
+        printf("Lista esta vazia.\n");
+        break;
+    case 2:
+        printf("O nodo informado e o ultimo da lista.\n");
+        break;
+    case 3:
+        printf("O nodo informado ja esta na lista.\n");
+        break;
+    case 4:
+        printf("O nodo informado nao esta na lista.\n");
+        break;
+    case 5:
+        printf("So e possivel inserir com pivo NULL em listas vazias.\n");
+        break;
+    default:
+        return;
+    }
+};
+
+void liberarNodo(Nodo* nodo){
+    free(nodo->info);
+    free(nodo);
+}
+
+void liberarLista(Lista* lista) {
+    Nodo* nodo = lista->head;
+    Nodo* nodoTemp;
+    while (nodo != NULL) {
+        nodoTemp = nodo;
+        nodo = nodo->next;
+        liberarNodo(nodoTemp);
+    }
+    free(lista);
+}
+
+Nodo* procurarNodo(Lista* lista, char* info) {
+    Nodo* ref = lista->head;
+    while (ref != NULL) {
+        if (strcmp(info, ref->info) == 0)
+            return ref;
+
+        ref = ref->next;
+    }
+    return NULL;
+}
+
+Nodo* criarNodo(char* info) {
+    Nodo* nodo = inicializarNodo();
+    nodo->info = (char*) malloc(sizeof(char) * (strlen(info) + 1));
+    strcpy(nodo->info, info);
+    return nodo;
 }
