@@ -21,33 +21,6 @@ void shellSort(int* vet, int size) {
     }
 }
 
-void radixSortM(int* vet, int size) {
-    int i, j, k, m, n, p, q, t;
-    int* cnt = (int*)malloc(sizeof(int)*256);
-    int* tmp = (int*)malloc(sizeof(int)*size);
-
-    for (k = 31; k >= 0; k -= 8) {
-        for (i = 0; i < 256; i++) {
-            cnt[i] = 0;
-        }
-        for (i = 0; i < size; i++) {
-            cnt[(vet[i] >> k) & 0xff]++;
-        }
-        for (i = 1; i < 256; i++) {
-            cnt[i] += cnt[i - 1];
-        }
-        for (i = size - 1; i >= 0; i--) {
-            j = (vet[i] >> k) & 0xff;
-            tmp[--cnt[j]] = vet[i];
-        }
-        for (i = 0; i < size; i++) {
-            vet[i] = tmp[i];
-        }
-    }
-
-    free(cnt);
-    free(tmp);
-}
 
 void radixSortL(int* vet, int size) {
     int i, j, k;

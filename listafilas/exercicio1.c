@@ -2,167 +2,141 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include "../fundamentos/lista-simples.c"
 
 #define TAM_ESTACIONAMENTO 10
 
-typedef struct sNodo {
-    char placa[8];
-
-    struct sNodo *next;
-} Nodo;
-
-typedef struct {
-    Nodo *head;
-    Nodo *tail;
-    int size;
-} Lista;
-
-void inicializarLista(Lista*);
-void tratarErro(int);
-int movimentar(Lista*, Lista*, char*, char);
-void imprimirLista(Lista*);
-void adicionarVeiculo(Lista*, char*);
-void removerVeiculo(Lista*, char*, bool, bool);
-void *adicionarNodo(Lista *, Nodo*);
-int removerNodo(Lista* lista, bool liberarMemoria);
+void movimentar(Lista*, Lista*, char*, char);
+void imprimirListas(Lista*, Lista*);
+void adicionarVeiculo(Lista*, Nodo*);
+void adicionarVeiculo(Lista*, Nodo*);
+Nodo* removerVeiculo(Lista*);
 
 int main() {
-    Lista *lista = malloc(sizeof(Lista));
-    inicializarLista(lista);
+    Lista* lista = inicializarLista();
+    Lista* listaEspera = inicializarLista();
 
-    Lista *listaEspera = malloc(sizeof(Lista));
-    inicializarLista(listaEspera);
+    printf("\nPasso 1:\n");
+    movimentar(lista, listaEspera, "ABC-0001", 'C');
+    printf("\nPasso 2:\n");
+    movimentar(lista, listaEspera, "ABC-0001", 'C');
+    printf("\nPasso 3:\n");
+    movimentar(lista, listaEspera, "ABC-0002", 'C');
+    printf("\nPasso 4:\n");
+    movimentar(lista, listaEspera, "ABC-0003", 'C');
+    printf("\nPasso 5:\n");
+    movimentar(lista, listaEspera, "ABC-0004", 'C');
+    printf("\nPasso 6:\n");
+    movimentar(lista, listaEspera, "ABC-0005", 'C');
+    printf("\nPasso 7:\n");
+    movimentar(lista, listaEspera, "ABC-0006", 'C');
+    printf("\nPasso 8:\n");
+    movimentar(lista, listaEspera, "ABC-0007", 'C');
+    printf("\nPasso 9:\n");
+    movimentar(lista, listaEspera, "ABC-0008", 'C');
+    printf("\nPasso 10:\n");
+    movimentar(lista, listaEspera, "ABC-0009", 'C');
+    printf("\nPasso 11:\n");
+    movimentar(lista, listaEspera, "ABC-0010", 'C');
+    printf("\nPasso 12:\n");
+    movimentar(lista, listaEspera, "ABC-0011", 'C');
+    printf("\nPasso 13:\n");
+    movimentar(lista, listaEspera, "ABC-0012", 'C');
+    printf("\nPasso 14:\n");
+    movimentar(lista, listaEspera, "ABC-0013", 'C');
+    printf("\nPasso 15:\n");
+    movimentar(lista, listaEspera, "ABC-0002", 'P');
+    printf("\nPasso 16:\n");
+    movimentar(lista, listaEspera, "ABC-0012", 'P');
 
-    tratarErro(movimentar(lista, listaEspera, "ABC-0001", 'C'));
-    tratarErro(movimentar(lista, listaEspera, "ABC-0001", 'C'));
-    tratarErro(movimentar(lista, listaEspera, "ABC-0002", 'C'));
-    tratarErro(movimentar(lista, listaEspera, "ABC-0003", 'C'));
-    tratarErro(movimentar(lista, listaEspera, "ABC-0004", 'C'));    
-    tratarErro(movimentar(lista, listaEspera, "ABC-0005", 'C'));
-    tratarErro(movimentar(lista, listaEspera, "ABC-0006", 'C'));
-    tratarErro(movimentar(lista, listaEspera, "ABC-0007", 'C'));
-    tratarErro(movimentar(lista, listaEspera, "ABC-0008", 'C'));
-    tratarErro(movimentar(lista, listaEspera, "ABC-0009", 'C'));
-    tratarErro(movimentar(lista, listaEspera, "ABC-0010", 'C'));
-    tratarErro(movimentar(lista, listaEspera, "ABC-0011", 'C'));
-    tratarErro(movimentar(lista, listaEspera, "ABC-0012", 'C'));
-    tratarErro(movimentar(lista, listaEspera, "ABC-0013", 'C'));    
-    tratarErro(movimentar(lista, listaEspera, "ABC-0014", 'C'));
+}
 
-    printf("Estacionamento: \n");
+void movimentar(Lista* lista, Lista* listaEspera, char* placa, char acao) {
+    Nodo* carro;
+    int movimentacoes = 0;
+    switch (acao)
+    {
+    case 'C':
+        carro = procurarNodo(lista, placa);
+        if (carro == NULL)
+            carro = procurarNodo(listaEspera, placa);
+        if (carro != NULL) {
+            printf("Veiculo ja esta no estacionamento/fila de espera!\n");
+            return;
+        }
+
+        if (lista->size < TAM_ESTACIONAMENTO) {
+            adicionarVeiculo(lista, criarNodo(placa));
+        } else {
+            adicionarVeiculo(listaEspera, criarNodo(placa));
+        }
+        break;
+    case 'P':
+        carro = procurarNodo(lista, placa);
+        if (carro != NULL) {
+            if (carro == lista->head) {
+                carro = removerVeiculo(lista);
+                free(carro);
+            } else {
+                Nodo* head = lista->head;
+                Nodo* carroRemovido;
+                int i = 0;
+                do {
+                    carroRemovido = removerVeiculo(lista);
+                    if (carroRemovido == carro) {
+                        free(carroRemovido);
+                        movimentacoes = i;
+                    } else {
+                        adicionarVeiculo(lista, carroRemovido);
+                    }
+                    i++;
+                } while (lista->head != head);
+            }
+            adicionarVeiculo(lista, removerVeiculo(listaEspera));
+        } else {
+            carro = procurarNodo(listaEspera, placa);
+            if (carro == NULL) {
+                printf("Veiculo nao esta no estacionamento/fila de espera!\n");
+                return;
+            }
+            if (carro == listaEspera->head) {
+                carro = removerVeiculo(listaEspera);
+                free(carro);
+            } else {
+                Nodo* head = listaEspera->head;
+                Nodo* carroRemovido;
+                do {
+                    carroRemovido = removerVeiculo(listaEspera);
+                    if (carroRemovido == carro) {
+                        free(carroRemovido);
+                    } else {
+                        adicionarVeiculo(listaEspera, carroRemovido);
+                    }
+                } while (listaEspera->head != head);
+            }
+        }
+        break;
+    default:
+        printf("Acao invalida!\n");
+        return;
+    }
+    imprimirListas(lista, listaEspera);
+    printf("Movimentacoes: %d\n", movimentacoes);
+}
+
+void imprimirListas(Lista* lista, Lista* listaEspera) {
+    printf("\nLista de estacionamento:\n");
     imprimirLista(lista);
-
-    printf("Fila de espera: \n");
+    printf("\nLista de espera:\n");
     imprimirLista(listaEspera);
 }
 
-void inicializarLista(Lista *lista) {
-    lista->head = NULL;
-    lista->tail = NULL;
-    lista->size = 0;
+void adicionarVeiculo(Lista* lista, Nodo* nodo) {
+    adicionarNodo(lista, lista->tail, nodo);
 }
 
-void inicializarNodo(Nodo *nodo, char *placa) {
-    nodo->next = NULL;
-    strcpy(nodo->placa, placa);
-}
-
-void tratarErro(int codigo) {
-    if (codigo != 0) {
-        switch (codigo)
-        {
-        case 1:
-            printf("Comando invalido.");
-            break;
-        
-        case 2:
-            printf("O veiculo ja esta no estacionamento.");
-            break;
-
-        case 3:
-            printf("O veiculo nao esta no estacionamento.");
-
-        case 4:
-            printf("O estacionamento esta vazio.");
-            break;
-
-        default:
-            break;
-        }
-    }
-}
-
-int movimentar(Lista *lista, Lista *listaEspera, char* placa, char tipoMovimento) {
-    Nodo *carro;
-    carro = buscar(lista, placa);
-    if (tipoMovimento == 'C') {
-        if (carro != NULL) {
-            return 2;
-        }
-        if (lista->size < 10) {
-            adicionarVeiculo(lista, placa);
-        } else {
-            adicionarVeiculo(listaEspera, placa);
-        }
-        
-    } else if (tipoMovimento == 'P') {
-        if (carro == NULL) {
-            carro = buscar(listaEspera, placa);
-            if (carro == NULL)
-                return 3;
-            
-            removerVeiculo(listaEspera, carro, true, false);
-        } else {
-            removerVeiculo(lista, carro, true, true);
-            adicionarVeiculo(lista, listaEspera->head);
-            removerVeiculo(listaEspera, listaEspera->head, false, false);
-        }
-    } else
-        return 1;
-
-    return 0;
-}
-
-void imprimirLista(Lista *lista) {
-    Nodo *carro = lista->head;
-    int i = 1;
-    if (lista->size > 0) {
-        do {
-            printf("[%d] => %s\n ()", i, carro->placa);
-        } while ((carro = carro->next) != NULL);
-    }
-}
-
-void adicionarVeiculo(Lista *lista, char *placa) {
-    Nodo *nodo = malloc(sizeof(Nodo));
-    inicializarNodo(nodo, placa);
-    adicionarNodo(lista, nodo);
-}
-
-void removerVeiculo(Lista *lista, Nodo *nodo, bool liberarMemoria, bool contabilizarGiro) {
-    while (lista->head != nodo) {
-        adicionarVeiculo(lista, lista->head);
-        removerNodo(lista, false);
-    }
-    
-}
-
-void *adicionarNodo(Lista *lista, Nodo *nodo) {
-    lista->tail->next = nodo;
-    lista->tail = nodo;
-}
-
-int removerNodo(Lista* lista, bool liberarMemoria) {
-    Nodo *nodoTemp;
-    if (lista->size == 0)
-        return 4;
-
-    nodoTemp = lista->head;
-    lista->head = lista->head->next;
-
-    lista->size--;
-    if (liberarMemoria)
-        free(nodoTemp);
-
-    return 0;
+Nodo* removerVeiculo(Lista* lista) {
+    Nodo* nodo = lista->head;
+    removerNodo(lista, nodo);
+    return nodo;
 }

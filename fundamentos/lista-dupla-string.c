@@ -61,7 +61,6 @@ void adicionarNodo(Lista* lista, Nodo* pivo, Nodo* nodo) {
         }
     }
     lista->size++;
-    return 0;
 }
 
 void imprimirLista(Lista* lista) {
@@ -90,7 +89,7 @@ int removerNodo(Lista* lista, Nodo* nodo) {
     if (nodo->prev != NULL) {
 
     }
-
+    lista->size--;
     return 4;
 }
 
